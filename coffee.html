@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高章洙的咖啡危機 - Coffee Baum 758</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #8B4513 0%, #D2B48C 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .screen {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes scorePopup {
+            0% { transform: scale(1.2); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #8B4513;
+            padding-bottom: 20px;
+        }
+
+        .game-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 5px;
+        }
+
+        .game-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #F5E6D3 0%, #F9F1E8 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #D2B48C;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #8B4513;
+            animation: scorePopup 0.6s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #E8D4C0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #D4AF37, #FFA500);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .season-badge {
+            display: inline-block;
+            background: #8B4513;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .dialogue-box {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFFAF0 100%);
+            border-left: 5px solid #8B4513;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            line-height: 1.8;
+            font-size: 15px;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: slideIn 0.6s ease;
+        }
+
+        .dialogue-box div {
+            margin: 8px 0;
+        }
+
+        .speaker-name {
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .speaker-name::before {
+            content: "👤";
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .system-message {
+            background: linear-gradient(135deg, #E8F4F8, #F0F8FC);
+            border-left: 5px solid #2C5F7F;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2C5F7F;
+            box-shadow: 0 2px 8px rgba(44, 95, 127, 0.1);
+        }
+
+        .event-notice {
+            background: linear-gradient(135deg, #FFE6E6, #FFE0E0);
+            border: 2px solid #E74C3C;
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 10px;
+            color: #C0392B;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        .event-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .options-section {
+            margin: 30px 0;
+        }
+
+        .options-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .option-category {
+            margin-bottom: 25px;
+        }
+
+        .category-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 15px;
+            display: block;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #D2B48C;
+        }
+
+        .option-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #D2B48C;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(139, 69, 19, 0.05);
+            transition: left 0.3s ease;
+        }
+
+        .option-btn:hover {
+            background: #FFF9E6;
+            border-color: #8B4513;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.15);
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            border-color: #6B3410;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-btn.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #FFD700;
+            animation: scorePopup 0.4s ease;
+        }
+
+        .option-btn.selected .option-label {
+            color: white;
+        }
+
+        .option-btn.selected .option-text {
+            color: white;
+        }
+
+        .option-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .option-text {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #6B3410, #8B4513);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background: #BFBFBF;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background: #D2B48C;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #B8956E;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-section {
+            background: linear-gradient(135deg, #F0E6D2, #F5EBE0);
+            border: 3px solid #8B4513;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 15px;
+        }
+
+        .result-score {
+            font-size: 20px;
+            color: #333;
+            margin: 12px 0;
+            transition: all 0.4s ease;
+        }
+
+        .result-score.success {
+            color: #27AE60;
+            font-weight: bold;
+            animation: scorePopup 0.6s ease;
+        }
+
+        .result-score.failure {
+            color: #E74C3C;
+            font-weight: bold;
+            animation: pulse 1s ease-in-out;
+        }
+
+        .ending-dialogue {
+            background: #FFF9E6;
+            border-left: 5px solid #8B4513;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .ending-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .score-breakdown {
+            background: linear-gradient(135deg, #F5E6D3, #F9F1E8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #E8D4C0;
+            transition: all 0.3s ease;
+        }
+
+        .breakdown-row:hover {
+            background: rgba(139, 69, 19, 0.03);
+            padding: 10px 8px;
+            border-radius: 4px;
+        }
+
+        .breakdown-row:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            font-weight: bold;
+            color: #8B4513;
+        }
+
+        .breakdown-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .breakdown-total {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 12px;
+            padding: 12px 8px;
+            border-top: 2px solid #8B4513;
+            background: rgba(139, 69, 19, 0.05);
+            border-radius: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+            }
+
+            .game-title {
+                font-size: 24px;
+            }
+
+            .option-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        .season-description {
+            background: #E8F4F8;
+            border-left: 5px solid #2C5F7F;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 遊戲開始畫面 -->
+        <div id="startScreen" class="screen">
+            <div class="game-header">
+                <div class="game-title">☕ 高章洙的咖啡危機</div>
+                <div class="game-subtitle">Coffee Baum 758 - 經營顧問遊戲</div>
+            </div>
+
+            <div class="dialogue-box">
+                <div class="speaker-name">高章洙：</div>
+                <div>「歡迎光臨，謝謝你願意在這個空無一人的早晨來看我。我的店叫『Coffee Baum 758』，在這裡撐了快四年，我快撐不下去了。</div><br>
+                <div>請幫幫我，給我一些建議，或許我的店還能有一線生機…</div><br>
+                <div>我們從春天開始。」</div>
+            </div>
+
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">累積總分</div>
+                    <div class="stat-value">0 分</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">通過回合</div>
+                    <div class="stat-value">0 / 4</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startGame()">開始第 1 回合：春季</button>
+            </div>
+        </div>
+
+        <!-- 遊戲進行畫面 -->
+        <div id="gameScreen" class="screen hidden">
+            <div class="game-header">
+                <div class="game-title">☕ 高章洙的咖啡危機</div>
+                <span class="season-badge" id="seasonBadge">春季</span>
+            </div>
+
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">累積總分</div>
+                    <div class="stat-value" id="cumulativeScore">0 分</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">通過回合</div>
+                    <div class="stat-value" id="roundsProgress">0 / 4</div>
+                </div>
+            </div>
+
+            <div id="seasonDescription" class="season-description"></div>
+
+            <div id="eventContainer"></div>
+
+            <div id="dialogueContainer"></div>
+
+            <div class="options-section">
+                <div class="options-title">請給出三個建議（裝潢、菜單、品管各選一個）：</div>
+                
+                <div class="option-category">
+                    <label class="category-label">🏠 裝潢</label>
+                    <div class="option-buttons" id="decorationOptions"></div>
+                </div>
+
+                <div class="option-category">
+                    <label class="category-label">📋 菜單</label>
+                    <div class="option-buttons" id="menuOptions"></div>
+                </div>
+
+                <div class="option-category">
+                    <label class="category-label">✅ 品質控管</label>
+                    <div class="option-buttons" id="qualityOptions"></div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="submitBtn" onclick="submitRound()" disabled>提交建議</button>
+            </div>
+        </div>
+
+        <!-- 回合結算畫面 -->
+        <div id="resultScreen" class="screen hidden">
+            <div class="game-header">
+                <div class="game-title">☕ 回合結算</div>
+            </div>
+
+            <div id="resultContent"></div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="nextBtn" onclick="nextRound()">繼續</button>
+            </div>
+        </div>
+
+        <!-- 遊戲結束畫面 -->
+        <div id="endScreen" class="screen hidden">
+            <div class="game-header">
+                <div class="game-title">☕ 遊戲結束</div>
+            </div>
+
+            <div id="endContent"></div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #D2B48C; font-size: 12px; color: #999; text-align: center;">
+                <div style="margin-bottom: 8px;">資料來源：紐約時報</div>
+                <a href="https://www.nytimes.com/interactive/2025/12/03/world/asia/south-korea-coffee-shops.html" target="_blank" style="color: #8B4513; text-decoration: none; word-break: break-all;">https://www.nytimes.com/interactive/2025/12/03/world/asia/south-korea-coffee-shops.html</a>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="location.reload()">重新開始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 遊戲數據 ====================
+        const SEASONS = ['春季', '夏季', '秋季', '冬季'];
+        
+        const SEASON_DESCRIPTIONS = {
+            '春季': '「你看看外面，天氣這麼好，但店裡還是空蕩蕩。對街那家新開的店，門口又排起隊了，不知道他們到底有什麼魔力？當初我以為這行不難，畢竟不用什麼執照，成本也比開餐廳低。但現在附近超過 50 家店，根本是地獄！你知道嗎，很多客人根本不是來喝咖啡的，他們只是想找個地方待著，因為家裡太小了，連約朋友來都難。我得想辦法，讓他們願意在我這裡多待一點時間…」',
+            '夏季': '「夏天來了，每天一睜眼就是冰美式、冰美式、冰美式！這簡直成了我們的『國民飲料』，但來得快去得也快，每杯利潤真的不高啊。你知道我一天工作多久嗎？超過 13 個小時！從早上開店到晚上關門，腰都快直不起來了。如果能多請個人幫忙該多好，但我連多付一個人的最低工資都得省著點花… 我得想想辦法，怎麼在不累死自己的情況下，更快地把那些冰美式送出去。」',
+            '秋季': '「我有點絕望了。光是提供一杯好咖啡，現在根本不夠！隔壁那家新開的店，連他們家的菜單排版和燈光風格都跟我一模一樣，根本分不出誰是誰！現在的客人，他們不是來『喝』咖啡的，是來『拍』咖啡、來『發』Instagram 的。如果我的店拍起來不夠好看，貼文得不到瀏覽次數，那我就完了。崔顧問說得對，我必須懂行銷、懂設計、懂菜單開發，我真的只是個想好好做咖啡的人啊…」',
+            '冬季': '「冬天到了，取暖費又是一筆開銷。最可怕的是那些低價連鎖店，他們就像吸血鬼一樣，用超低的價格搶走我的客人，我怎麼跟他們拚？我的租約就快到期了，我常常感到絕望，不知道自己是否還能繼續當咖啡師… 昨天還看到一個 YouTube 影片，是名廚勸大家不要開咖啡館。難道我真的走錯路了嗎？我該堅持下去，專注我的專業，還是乾脆認輸，退出這個市場？」'
+        };
+
+        const BASE_SCORES = {
+            '春季': {
+                '裝潢': { 'A': 3, 'B': 1, 'C': -1 },
+                '菜單': { 'A': 3, 'B': 1, 'C': -1 },
+                '品管': { 'A': 1, 'B': -1, 'C': 3 }
+            },
+            '夏季': {
+                '裝潢': { 'A': 1, 'B': 3, 'C': -1 },
+                '菜單': { 'A': 3, 'B': 1, 'C': -1 },
+                '品管': { 'A': 3, 'B': 1, 'C': -1 }
+            },
+            '秋季': {
+                '裝潢': { 'A': -1, 'B': 3, 'C': 1 },
+                '菜單': { 'A': 1, 'B': 1, 'C': 3 },
+                '品管': { 'A': 3, 'B': 1, 'C': -1 }
+            },
+            '冬季': {
+                '裝潢': { 'A': 1, 'B': -1, 'C': 3 },
+                '菜單': { 'A': 3, 'B': 1, 'C': -1 },
+                '品管': { 'A': 3, 'B': 1, 'C': -1 }
+            }
+        };
+
+        const OPTIONS_TEXT = {
+            '春季': {
+                '裝潢': {
+                    'A': '打造 Instagrammable 主題空間（亮色系、綠色植物、拍照角落）',
+                    'B': '進行基礎翻新（重漆牆壁、更換燈具、清潔整理）',
+                    'C': '維持現狀，但增加舒適度（加墊子、調整座位、改善通風）'
+                },
+                '菜單': {
+                    'A': '跟風推出新型態甜點（珍奶提拉米蘇、網紅限定飲品）',
+                    'B': '保持傳統咖啡為主，輔以簡單甜點',
+                    'C': '大幅改革菜單（推出季節限定、地方特色飲品）'
+                },
+                '品管': {
+                    'A': '降低採購成本（尋找便宜豆商、調整品質標準）',
+                    'B': '保持中等品質，嚴格控管浪費',
+                    'C': '投資優質咖啡豆（追求精品咖啡形象）'
+                }
+            },
+            '夏季': {
+                '裝潢': {
+                    'A': '強調涼爽感（冷色系、冷氣加強、冰涼視覺裝飾）',
+                    'B': '提高出餐效率（改善吧台配置、加快流程、優化空間）',
+                    'C': '保持舒適性（增加涼風座位、改善動線）'
+                },
+                '菜單': {
+                    'A': '推出高利潤特調（限定冰沙、特色冰美式）',
+                    'B': '強化冰美式銷售（打造國民飲品形象、提高單價）',
+                    'C': '多樣化嘗試（增加新飲品、試驗新組合）'
+                },
+                '品管': {
+                    'A': '投入員工培訓（提升效率、減少老闆工時、合法改善勞動條件）',
+                    'B': '基礎原料檢測（定期檢查食材新鮮度、衛生管理）',
+                    'C': '簡化操作流程（用代工品替代自製、降低難度）'
+                }
+            },
+            '秋季': {
+                '裝潢': {
+                    'A': '照搬流行設計（跟風最新咖啡廳風格、簡約北歐風）',
+                    'B': '融入在地文化（地方特色、文藝氛圍、社區故事）',
+                    'C': '強化舒適感（木質裝飾、溫暖色調、音樂氛圍）'
+                },
+                '菜單': {
+                    'A': '推出高利潤特調（精品咖啡、冷萃特調）',
+                    'B': '維持穩定菜單（可靠品質、客戶信任）',
+                    'C': '推出拍起來好看飲品（視覺吸引、社群傳播力強）'
+                },
+                '品管': {
+                    'A': '與 KOL / 網紅合作（邀請合作、提升知名度）',
+                    'B': '口碑行銷（鼓勵顧客分享、建立評論）',
+                    'C': '行銷投資（廣告、社群推廣、事件行銷）'
+                }
+            },
+            '冬季': {
+                '裝潢': {
+                    'A': '強化暖色調裝飾（溫暖燈光、舒適布置、壁爐感）',
+                    'B': '簡潔清爽風格（北歐簡約、現代感、整潔明亮）',
+                    'C': '建立會員忠誠計畫（打卡集點、會員專屬、回頭客獎勵）'
+                },
+                '菜單': {
+                    'A': '推出高性價比套餐（飲品 + 點心組合、超值組合）',
+                    'B': '多樣化甜點選擇（應對不同客群、提高客單價）',
+                    'C': '限定冬季飲品（熱飲主打、季節特色）'
+                },
+                '品管': {
+                    'A': '保持品質堅持（選擇優質豆子、專業標準、職人精神）',
+                    'B': '客戶服務優化（友善態度、個人化服務、記住常客）',
+                    'C': '成本優化與品質平衡（精選經濟豆、穩定出品、維持專業形象）'
+                }
+            }
+        };
+
+        const EVENTS = [
+            {
+                id: 1,
+                name: '咖啡豆價格飆升',
+                description: '「你聽到最新的消息了嗎？全球咖啡豆產地因天災減產，咖啡豆價格暴漲 30%！這對我們這種單獨進貨的小店來說簡直是致命打擊，利潤空間被嚴重壓縮了！」',
+                modifiers: [
+                    { season: '春季', category: '品管', option: 'C', delta: 2, reasoning: '應對成本衝擊，效益極高' },
+                    { season: '春季', category: '菜單', option: 'B', delta: -2, reasoning: '高品質豆子成本難以承擔' }
+                ],
+                used: false
+            },
+            {
+                id: 2,
+                name: '網紅探店衝擊',
+                description: '「天啊，昨天一位擁有數十萬粉絲的網紅來我們店裡，但她在 IG 限時動態抱怨『店裡光線太暗，拍不出理想的照片』。雖然她沒指名道姓，但流量就是一切，我們必須讓店面更上相！」',
+                modifiers: [
+                    { season: '春季', category: '裝潢', option: 'A', delta: 2, reasoning: '解決燃眉之急，帶來巨大曝光機會' },
+                    { season: '秋季', category: '裝潢', option: 'A', delta: 2, reasoning: '解決燃眉之急，帶來巨大曝光機會' },
+                    { season: '秋季', category: '品管', option: 'A', delta: -2, reasoning: '網紅已經來過了，現在重點是視覺環境' }
+                ],
+                used: false
+            },
+            {
+                id: 3,
+                name: '政府工時稽查',
+                description: '「老闆我收到警告了！政府最近加強了對餐飲業的勞動工時稽查，罰款非常重！你知道我已經每天工作超過 13 個小時了，我們得想個合法的辦法減少我的工作時間，不然我可能要吃罰單了。」',
+                modifiers: [
+                    { season: '夏季', category: '品管', option: 'A', delta: 2, reasoning: '培訓員工以合法減少老闆工時，效益大增' },
+                    { season: '秋季', category: '品管', option: 'A', delta: 2, reasoning: '培訓員工以合法減少老闆工時，效益大增' },
+                    { season: '夏季', category: '裝潢', option: 'B', delta: -2, reasoning: '效率提升但無法解決老闆超時問題' }
+                ],
+                used: false
+            },
+            {
+                id: 4,
+                name: '連鎖店極限促銷',
+                description: '「連鎖店真的太狠了！對面的大型連鎖品牌推出了『冰美式買一送一，限時三天』活動！我的冰美式簡直賣不動了，他們正在用極低的價格摧毀市場，我們不能跟著賠本啊！」',
+                modifiers: [
+                    { season: '夏季', category: '菜單', option: 'B', delta: -3, reasoning: '低價競爭下，此項成為負資產' },
+                    { season: '冬季', category: '菜單', option: 'A', delta: 2, reasoning: '提供有競爭力且能帶來利潤的替代方案，效益極高' }
+                ],
+                used: false
+            },
+            {
+                id: 5,
+                name: '在地文化媒體專訪',
+                description: '「有機會了！地方媒體正在為一篇關於『社區獨立小店』的專題尋找採訪對象。他們對那些有故事、能體現在地文化的店最有興趣。如果能被選上，我們的知名度肯定會大增！」',
+                modifiers: [
+                    { season: '秋季', category: '裝潢', option: 'B', delta: 2, reasoning: '獲得媒體免費曝光的機會極大' },
+                    { season: '秋季', category: '裝潢', option: 'A', delta: -2, reasoning: '與媒體尋找的目標背道而馳' }
+                ],
+                used: false
+            },
+            {
+                id: 6,
+                name: '競爭者設計雷同',
+                description: '「我真的要瘋了！街角那家新開的店，連他們家的菜單排版和燈光風格都跟我一模一樣！顧客根本分不出誰是誰！我花了這麼多心思裝潢，結果一點區別都沒有，我該怎麼才能真正跳出來？」',
+                modifiers: [
+                    { season: '秋季', category: '菜單', option: 'C', delta: 2, reasoning: '外觀差異化成為脫穎而出的關鍵' },
+                    { season: '夏季', category: '菜單', option: 'A', delta: -2, reasoning: '若外觀相似，利潤高的特調也容易被模仿' }
+                ],
+                used: false
+            },
+            {
+                id: 7,
+                name: '極端氣候衝擊',
+                description: '「這週的天氣預報顯示，即將迎來歷史罕見的連續降雨和低溫。顧客一定會希望在我們這裡獲得最溫暖舒適的體驗，而不是冷冰冰、濕漉漉的感覺。」',
+                modifiers: [
+                    { season: '冬季', category: '裝潢', option: 'A', delta: 2, reasoning: '舒適氛圍成為當季首要吸引力' },
+                    { season: '冬季', category: '裝潢', option: 'C', delta: -2, reasoning: '天氣因素比忠誠度更能影響短期客流' }
+                ],
+                used: false
+            },
+            {
+                id: 8,
+                name: '顧客關係危機',
+                description: '「昨天有顧客在網路上留言，抱怨我們雖然空間舒適，但服務態度不夠積極，沒有感受到專屬感。在這個社群時代，顧客的忠誠度比什麼都重要！我們必須讓他們感覺到與眾不同！」',
+                modifiers: [
+                    { season: '冬季', category: '裝潢', option: 'C', delta: 2, reasoning: '緊急建立顧客關係，效益大增' },
+                    { season: '夏季', category: '品管', option: 'B', delta: -2, reasoning: '解決服務問題比原料更重要' }
+                ],
+                used: false
+            }
+        ];
+
+        const ROUND_FEEDBACK = {
+            '春季': {
+                '高影響_社交設計': {
+                    'success': '【調查資料】「許多人住在狹小的公寓裡... 咖啡館提供了情侶們晚餐後可以流連、老朋友可以敘舊、學生可以熬夜讀書，以及任何人都可以獨自坐著滑手機而不受打擾的空間。」（證明策略方向正確）',
+                    'failure': '【調查資料】「咖啡館的創業成本比酒吧和餐廳等其他熱門選擇低，而且不需要特殊的咖啡師執照。」（點出創業門檻低，競爭者眾多）'
+                },
+                '高影響_成本控制': {
+                    'success': '【數據資料】「崔先生說，許多店主每月淨收入僅 2,700 至 3,400 美元，略高於最低工資。而這還是他們每天工作超過 13 小時所換來的。」（強調成本控制對微薄利潤的重要性）',
+                    'failure': '【數據資料】「當高先生於 2016 年開設他的咖啡館時，當時幾百英尺內只有另外兩家咖啡店。從那時起，咖啡館在韓國城市中隨處可見，過去六年全國數量翻了一倍。」（強調環境已變，競爭激烈）'
+                }
+            },
+            '夏季': {
+                '高影響_效率培訓': {
+                    'success': '【數據資料】「崔先生說，許多店主每月淨收入僅 2,700 至 3,400 美元... 而這還是他們每天工作超過 13 小時所換來的。」（證明效率改善，緩解長工時問題）',
+                    'failure': '【數據資料】「崔先生說，許多店主每月淨收入僅 2,700 至 3,400 美元，略高於最低工資。而這還是他們每天工作超過 13 小時所換來的。」（指出長工時與低利潤的困境沒有解決）'
+                },
+                '高影響_菜單': {
+                    'success': '【調查資料】「如今，冰美式咖啡在韓語中被暱稱為『ah-ah』，可說是一種非官方的國民飲料。」（國民飲料的市場基石穩固，需要以此為基礎開發高利潤產品）',
+                    'failure': '【調查資料】「面對停滯不前的就業市場和嚴苛的辦公室文化，一些韓國人將開設咖啡館視為一條通往獨立的道路。」（再次提醒老闆，競爭來自急於轉行的龐大群體）'
+                }
+            },
+            '秋季': {
+                '高影響_社群行銷': {
+                    'success': '【調查資料】「在現今社群媒體主導的文化中，咖啡館的成功與否，往往取決於它拍起來好不好看，以及相關貼文獲得多少瀏覽次數，而不是它提供什麼。」（證明策略方向與市場趨勢完全吻合）',
+                    'failure': '【調查資料】「光是提供好咖啡還不夠... 老闆需要了解行銷、室內設計和菜單開發，才能迎合最新趨勢。」（指出失敗在於缺乏多元經營能力）'
+                },
+                '負面_照搬設計': {
+                    'success': '【調查資料】「室內設計趨勢很快就會流行起來，導致許多店家採用相似的美學風格。」（即使成功，也提醒差異化仍是長久之計）',
+                    'failure': '【調查資料】「崔先生說，這也意味著許多咖啡館可能不太注重咖啡本身的品質。」（指出為了追求表象而犧牲品質的風險）'
+                }
+            },
+            '冬季': {
+                '高影響_忠誠度': {
+                    'success': '【數據資料】「全國 5,100 萬人口擁有 8 萬家咖啡館，其中僅首爾就有 1 萬多家。」（在極端飽和的市場中，強調穩固回頭客的重要性）',
+                    'failure': '【數據資料】「許多人在第一份租約到期後，也就是僅僅一兩年後，就選擇退出。他說，隨著越來越多的咖啡店開業，它們的壽命也越來越短。」（指出市場殘酷的淘汰率）'
+                },
+                '高影響_價格競爭': {
+                    'success': '【調查資料】「咖啡館老闆也面臨來自低價連鎖店日益增長的壓力，儘管這些連鎖店在生活成本和咖啡豆價格上漲的情況下，也難以維持利潤。」（證明策略有效應對了連鎖店的價格戰）',
+                    'failure': '【調查資料】「張先生說，他過去十年工作過的七家咖啡館中，有五家已經不復存在。『我常常感到絕望，不知道自己是否還能繼續當咖啡師，』他說。」（強調環境的絕望感和持續的失敗）'
+                }
+            }
+        };
+
+        const ENDINGS = {
+            'ending0': {
+                title: '結局 1：絕望的退出者',
+                subtitle: '（高章洙路線）',
+                dialogue: '「唉… 我聽了你的建議，也嘗試了許多改變，但結果還是一樣。我看到別人的店大排長隊，就以為經營咖啡店很簡單，但這份工作真的很辛苦，利潤也非常微薄。我已經常常感到絕望了，不知道自己是否還能繼續當咖啡師。這幾年，我面對的不只是咖啡的品質，還有無止境的行銷、室內設計和來自低價連鎖店的壓力。現在，我的租約也快到期了... 如果能重來，我什麼都願意做，就是不會開咖啡館。 謝謝你，但我決定退出了，咖啡館不是致富的地方，它只是一個可以去喝咖啡的地方。」'
+            },
+            'ending1': {
+                title: '結局 2：苦撐的生存者',
+                subtitle: '（崔善旭的客戶路線）',
+                dialogue: '「你給的建議幫助我度過了幾個難關，特別是在社群媒體和成本控制方面。我的店現在算是勉強維持收支平衡了。 consultant 崔善旭說的沒錯，我們這些進入這行的人，大多沒有做好準備。我確實每天工作超過 13 小時，每個月的淨收入也只比最低工資高一點點。我已經賣掉了我最貴的咖啡豆，轉而專注於那杯非官方的國民飲料——冰美式。我會繼續努力，但這份工作的辛苦程度，只有真正經營過的人才明白。 謝謝你的幫助，我還會再撐一陣子。」'
+            },
+            'ending2': {
+                title: '結局 3：成功的弄潮兒',
+                subtitle: '（稀有案例）',
+                dialogue: '「太感謝你了！我的店現在真的在我們的社區中脫穎而出了。我們成功的打造了那個Instagrammable的打卡點，引領了潮流甜點，而且顧客們也開始將我的店作為他們晚餐後流連、獨自滑手機的舒適空間。我現在明白，光是提供好咖啡是不夠的，必須理解行銷、室內設計和菜單開發。當初我看到門前大排長隊時，以為賺錢很容易，現在我知道成功來自不斷的適應和專注。 我終於擺脫了朝九晚五的生活，但這不是結束，而是另一個挑戰的開始！」'
+            }
+        };
+
+        // ==================== 遊戲狀態 ====================
+        let gameState = {
+            currentRound: 0,
+            cumulativeScore: 0,
+            selectedOptions: {
+                '裝潢': null,
+                '菜單': null,
+                '品管': null
+            },
+            roundScores: [],
+            eventOccurred: false,
+            currentEvent: null,
+            eventModifiers: {}
+        };
+
+        // ==================== 輔助函數 ====================
+        function getRandomEvent() {
+            const availableEvents = EVENTS.filter(e => !e.used);
+            if (availableEvents.length === 0) return null;
+            
+            const event = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+            event.used = true;
+            return event;
+        }
+
+        function calculateEventModifiers(event, season) {
+            const modifiers = {};
+            event.modifiers.forEach(mod => {
+                if (mod.season === season) {
+                    const key = `${mod.category}-${mod.option}`;
+                    modifiers[key] = mod.delta;
+                }
+            });
+            return modifiers;
+        }
+
+        function getOptionScore(season, category, option) {
+            let score = BASE_SCORES[season][category][option];
+            
+            if (gameState.eventModifiers) {
+                const key = `${category}-${option}`;
+                if (gameState.eventModifiers[key] !== undefined) {
+                    score += gameState.eventModifiers[key];
+                }
+            }
+            
+            return score;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function resetSelections() {
+            gameState.selectedOptions = {
+                '裝潢': null,
+                '菜單': null,
+                '品管': null
+            };
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // ==================== 遊戲流程 ====================
+        function startGame() {
+            gameState.currentRound = 0;
+            gameState.cumulativeScore = 0;
+            gameState.roundScores = [];
+            EVENTS.forEach(e => e.used = false);
+            nextRound();
+        }
+
+        function nextRound() {
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > 4) {
+                showEnding();
+                return;
+            }
+
+            resetSelections();
+            gameState.eventModifiers = {};
+            gameState.eventOccurred = false;
+            gameState.currentEvent = null;
+
+            // 50% 機率觸發事件
+            if (Math.random() < 0.5) {
+                gameState.currentEvent = getRandomEvent();
+                if (gameState.currentEvent) {
+                    gameState.eventOccurred = true;
+                    const season = SEASONS[gameState.currentRound - 1];
+                    gameState.eventModifiers = calculateEventModifiers(gameState.currentEvent, season);
+                }
+            }
+
+            showRound();
+        }
+
+        function showRound() {
+            const season = SEASONS[gameState.currentRound - 1];
+            
+            // 更新顯示
+            document.getElementById('seasonBadge').textContent = season;
+            document.getElementById('cumulativeScore').textContent = gameState.cumulativeScore + ' 分';
+            document.getElementById('roundsProgress').textContent = `${gameState.currentRound} / 4`;
+
+            // 顯示季節描述
+            const descBox = document.getElementById('seasonDescription');
+            descBox.innerHTML = `<div class="speaker-name">高章洙：</div><div>${SEASON_DESCRIPTIONS[season]}</div>`;
+
+            // 顯示事件（如有）
+            const eventContainer = document.getElementById('eventContainer');
+            eventContainer.innerHTML = '';
+            if (gameState.eventOccurred && gameState.currentEvent) {
+                eventContainer.innerHTML = `
+                    <div class="event-notice">
+                        <div class="event-title">⚠️ 事件：${gameState.currentEvent.name}</div>
+                        <div class="speaker-name">高章洙：</div>
+                        <div>${gameState.currentEvent.description}</div>
+                    </div>
+                    <div class="system-message">
+                        [系統：此事件會影響部分選項的分數]
+                    </div>
+                `;
+            } else {
+                eventContainer.innerHTML = `
+                    <div class="system-message">
+                        [系統：幸好今天沒出什麼大亂子，但競爭的壓力依舊很大…]
+                    </div>
+                `;
+            }
+
+            // 生成選項
+            generateOptions(season);
+
+            showScreen('gameScreen');
+        }
+
+        function generateOptions(season) {
+            const categories = ['裝潢', '菜單', '品管'];
+            const options = ['A', 'B', 'C'];
+
+            categories.forEach(category => {
+                const container = document.getElementById(
+                    category === '裝潢' ? 'decorationOptions' :
+                    category === '菜單' ? 'menuOptions' :
+                    'qualityOptions'
+                );
+                container.innerHTML = '';
+
+                options.forEach(option => {
+                    const score = getOptionScore(season, category, option);
+                    const baseScore = BASE_SCORES[season][category][option];
+                    const hasModifier = score !== baseScore;
+                    
+                    let scoreDisplay = formatScore(score);
+                    if (hasModifier) {
+                        const modifier = score - baseScore;
+                        scoreDisplay = `${formatScore(baseScore)} → ${formatScore(score)}`;
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `
+                        <div class="option-label">選項 ${option}</div>
+                        <div class="option-text">${OPTIONS_TEXT[season][category][option]}</div>
+                    `;
+                    
+                    btn.onclick = () => selectOption(category, option, btn);
+                    container.appendChild(btn);
+                });
+            });
+        }
+
+        function formatScore(score) {
+            if (score > 0) return `+${score}`;
+            return `${score}`;
+        }
+
+        function selectOption(category, option, btn) {
+            // 移除同分類的其他選項選擇
+            const container = btn.parentElement;
+            container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            
+            // 選擇此選項
+            btn.classList.add('selected');
+            gameState.selectedOptions[category] = option;
+            
+            // 檢查是否三個都選好了
+            if (gameState.selectedOptions['裝潢'] && gameState.selectedOptions['菜單'] && gameState.selectedOptions['品管']) {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        function submitRound() {
+            const season = SEASONS[gameState.currentRound - 1];
+            const categories = ['裝潢', '菜單', '品管'];
+            
+            let roundScore = 0;
+            const breakdown = [];
+            
+            categories.forEach(category => {
+                const option = gameState.selectedOptions[category];
+                const score = getOptionScore(season, category, option);
+                roundScore += score;
+                breakdown.push({ category, option, score });
+            });
+
+            gameState.roundScores.push(roundScore);
+            const prevCumulative = gameState.cumulativeScore;
+            gameState.cumulativeScore += roundScore;
+
+            showRoundResult(season, roundScore, breakdown, prevCumulative);
+        }
+
+        function getFeedbackType(season, breakdown) {
+            // 找出分數最高的選項
+            let maxScore = -Infinity;
+            let maxBreakdown = null;
+            
+            breakdown.forEach(b => {
+                if (b.score > maxScore) {
+                    maxScore = b.score;
+                    maxBreakdown = b;
+                }
+            });
+
+            if (!maxBreakdown) return null;
+
+            const category = maxBreakdown.category;
+            const option = maxBreakdown.option;
+
+            // 根據季節和選項判斷反饋類型
+            if (season === '春季') {
+                if ((category === '裝潢' && option === 'A') || (category === '菜單' && option === 'A')) {
+                    return '高影響_社交設計';
+                } else if (category === '品管' && option === 'C') {
+                    return '高影響_成本控制';
+                }
+            } else if (season === '夏季') {
+                if ((category === '裝潢' && option === 'B') || (category === '品管' && option === 'A')) {
+                    return '高影響_效率培訓';
+                } else if (category === '菜單' && option === 'A') {
+                    return '高影響_菜單';
+                }
+            } else if (season === '秋季') {
+                if ((category === '裝潢' && (option === 'A' || option === 'B')) || 
+                    (category === '菜單' && option === 'C') || 
+                    (category === '品管' && option === 'A')) {
+                    return '高影響_社群行銷';
+                } else if (category === '裝潢' && option === 'A') {
+                    return '負面_照搬設計';
+                }
+            } else if (season === '冬季') {
+                if ((category === '裝潢' && option === 'C') || (category === '品管' && option === 'A')) {
+                    return '高影響_忠誠度';
+                } else if (category === '菜單' && option === 'A') {
+                    return '高影響_價格競爭';
+                }
+            }
+
+            return null;
+        }
+
+        function getRoundFeedback(season, isSuccess, feedbackType) {
+            if (!feedbackType || !ROUND_FEEDBACK[season] || !ROUND_FEEDBACK[season][feedbackType]) {
+                return null;
+            }
+
+            const resultKey = isSuccess ? 'success' : 'failure';
+            return ROUND_FEEDBACK[season][feedbackType][resultKey];
+        }
+
+        function showRoundResult(season, roundScore, breakdown, prevCumulative) {
+            const isSuccess = roundScore >= 7;
+            let html = '';
+
+            if (isSuccess) {
+                html = `
+                    <div class="result-section">
+                        <div class="result-title">✓ 本季成功！</div>
+                        <div class="result-score success">本季總分：${roundScore} 分（≥ 7 分）</div>
+                    </div>
+                    <div class="dialogue-box">
+                        <div class="speaker-name">高章洙：</div>
+                        <div>「這些建議太棒了！我們開始看到一些起色了，顧客有所回流，那些大排長龍的錯覺似乎開始實現了！謝謝你！讓我們進入下一季，我還需要你！」</div>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="result-section">
+                        <div class="result-title">✗ 本季虧損</div>
+                        <div class="result-score failure">本季總分：${roundScore} 分（< 7 分）</div>
+                    </div>
+                    <div class="dialogue-box">
+                        <div class="speaker-name">高章洙（絕望地嘆氣）：</div>
+                        <div>「這真的太難了，我們的努力還不夠。在這個超過 50 家競爭者的市場裡，沒有辦法快速引起爆炸性的反應，根本無法生存。我的現金流撐不住了，在租約到期前，我就得退出。謝謝你的心意，但我已經決定了... 如果能重來，我什麼都願意做，就是不會開咖啡館。」</div>
+                    </div>
+                `;
+                document.getElementById('nextBtn').onclick = () => nextRound();
+            }
+
+            html += `
+                <div class="score-breakdown">
+                    <div style="font-weight: bold; margin-bottom: 10px;">本季選擇分析：</div>
+                    ${breakdown.map(b => `
+                        <div class="breakdown-row">
+                            <span class="breakdown-label">${b.category} (選項 ${b.option})：</span>
+                            <span class="breakdown-value">${formatScore(b.score)}</span>
+                        </div>
+                    `).join('')}
+                    <div class="breakdown-row breakdown-total">
+                        <span>本季總分：</span>
+                        <span>${formatScore(roundScore)}</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>累積總分：</span>
+                        <span>${prevCumulative} → ${gameState.cumulativeScore} 分</span>
+                    </div>
+                </div>
+            `;
+
+            // 添加產業反饋資料
+            const feedbackType = getFeedbackType(season, breakdown);
+            const feedback = getRoundFeedback(season, isSuccess, feedbackType);
+            if (feedback) {
+                html += `
+                    <div style="background: #F0F8FF; border-left: 5px solid #2C5F7F; padding: 15px; margin: 15px 0; border-radius: 5px; font-size: 14px; line-height: 1.6; color: #333;">
+                        ${feedback}
+                    </div>
+                `;
+            }
+
+            document.getElementById('resultContent').innerHTML = html;
+            
+            if (!isSuccess) {
+                document.getElementById('nextBtn').textContent = '繼續遊戲';
+            } else {
+                document.getElementById('nextBtn').textContent = '進入下一季';
+            }
+            
+            document.getElementById('nextBtn').onclick = () => nextRound();
+
+            showScreen('resultScreen');
+        }
+
+        function showEnding() {
+            let endingKey;
+            let endData;
+            
+            if (gameState.cumulativeScore <= 4) {
+                endingKey = 'ending0';
+            } else if (gameState.cumulativeScore >= 5 && gameState.cumulativeScore <= 18) {
+                endingKey = 'ending1';
+            } else {
+                endingKey = 'ending2';
+            }
+            
+            endData = ENDINGS[endingKey];
+            
+            document.getElementById('endContent').innerHTML = `
+                <div class="result-section">
+                    <div class="result-title">${endData.title}</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 8px;">${endData.subtitle}</div>
+                    <div class="result-score" style="margin-top: 15px;">最終累積總分：${gameState.cumulativeScore} 分</div>
+                </div>
+                <div class="ending-dialogue">
+                    <div class="speaker-name">高章洙：</div>
+                    <div>${endData.dialogue}</div>
+                </div>
+            `;
+            
+            document.getElementById('nextBtn').textContent = '重新開始';
+            document.getElementById('nextBtn').onclick = () => location.reload();
+            showScreen('endScreen');
+        }
+    </script>
+</body>
+</html>
